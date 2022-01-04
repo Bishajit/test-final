@@ -32,9 +32,38 @@ jobs:
               cd frontend/
               cp -r ~/project/frontend/. /usr/share/nginx/html
 
+
+  build_in_ubuntu:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          name: Installing AWS CLI
+          command: |
+            sudo apt-get update
+            sudo apt install python3-pip
+            sudo pip3 install awsebcli --upgrade
+      - run: cd ./backend && pip install -r requirements.txt && python server.py
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  deploy:
+    machine:
+        image: ubuntu-2004:202010-01
+    steps:
+      - attach_workspace:
+          at: .
+      - checkout
+      - run: aws s3 sync ./backend/build s3://ci-cd-final
+
 workflows:
   build_test:
     jobs:
       - build_and_test_frontend
       - build_and_test_backend
+      - build_in_ubuntu
+      - deploy
 
