@@ -42,9 +42,10 @@ jobs:
           name: Installing AWS CLI
           command: |
             sudo apt-get update
+            sudo apt install python3.9
             sudo apt install python3-pip
             sudo pip3 install awsebcli --upgrade
-      - run: cd ./backend && pip install -r requirements.txt && python server.py
+      - run: cd ./backend && python3 -m venv venv && pip install --no-cache-dir -r requirements.txt && FLASK_APP=server.py && python3 server.py &
       - persist_to_workspace:
           root: .
           paths:
@@ -65,5 +66,6 @@ workflows:
       - build_and_test_frontend
       - build_and_test_backend
       - build_in_ubuntu
-      - deploy
-
+      - deploy:
+          requires:
+            - build_in_ubuntu
